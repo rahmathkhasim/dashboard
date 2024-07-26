@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrollable Website with Authentication</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            overflow-x: hidden;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            position: relative; /* Added to allow absolute positioning of search */
+        }
+
+        .logo {
+            margin-left: 235px;
+            margin-right: auto; /* Aligns logo to the left */
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            width: 30px; /* Adjust size as needed */
+            height: auto;
+            cursor: pointer;
+        }
+
+        nav a {
+            margin: 0 -93px;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #4ECDC4;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center; /* Center the search bar horizontally */
+            position: absolute; /* Position it absolutely within the nav-content */
+            left: 50%; /* Center the search bar */
+            transform: translateX(-3%); /* Adjust for centering */
+            width: 400%;
+            max-width: 400px; /* Ensure search container does not exceed this width */
+        }
+
+        .search-input {
+            padding: 5px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            width: 200%; /* Full width of container */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 10px rgba(92, 17, 213, 0.1);
+        }
+
+        section {
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .filters {
+            margin-top: 1.5%;
+            width: 35%;
+            height: 50%;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .filters h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .filters label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .filters input[type="checkbox"] {
+            margin-right: 2px;
+        }
+
+        .filters input[type="range"] {
+            width: 100%;
+        }
+
+        .dashboard {
+            width: 100%;
+        }
+
+        .hostel-details {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            transform: scale(1);
+            width: 90%;
+            margin: 20px auto;
+            background-color: #e2e8f0;
+            color: black;
+            cursor: pointer;
+        }
+
+        .hostel-details:hover {
+            transform: scale(1.05);
+        }
+
+        .hostel-image-slider {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .hostel-image {
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease;
+        }
+
+        .hostel-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .hostel-info {
+            flex: 1;
+            padding-left: 20px;
+            font-size: 16px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.1s ease, left 0.1s ease;
+            transform: scale(1);
+            left: 0;
+            white-space: nowrap;
+        }
+
+        .hostel-name {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+
+        .hostel-rating {
+            color: #040404;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+
+        .view-details {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .view-button {
+            background-color: #053398; 
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .view-button:hover {
+            background-color: #5f78e7;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <img src="Designer (1).png" alt="Logo" onclick="window.location.href='#home'">
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search hostels..." onkeyup="filterHostels()">
+            </div>
+            <a href="#home">Home</a>
+            <a href="#dashboard">Dashboard</a>
+        </div>
+    </nav>
+    <section id="dashboard" class="container">
+        <div class="filters">
+            <h2>Filters</h2>
+            <label><input type="checkbox" name="price" value="low"> Price: Low to High</label>
+            <label><input type="checkbox" name="price" value="high"> Price: High to Low</label>
+            <label><input type="checkbox" name="rating" value="high"> Rating: High to Low</label>
+            <label><input type="checkbox" name="rating" value="low"> Rating: Low to High</label>
+            <label><input type="checkbox" name="reviews" value="high"> Reviews: High to Low</label>
+            <label><input type="checkbox" name="reviews" value="low"> Reviews: Low to High</label>
+            <label>Distance: <input type="range" id="distanceRange" min="1" max="100" value="50" oninput="filterHostels()"></label>
+        </div>
+        <div class="dashboard">
+            <!-- Manasa Hostel -->
+            <a href="viewdetails.html" style="text-decoration: none;">
+                <div class="hostel-details" id="manasa" data-price="7000" data-rating="4" data-reviews="50" data-distance="20" onmouseenter="startSlide('manasa')" onmouseleave="stopSlide('manasa')">
+                    <div class="hostel-image-slider">
+                        <div class="hostel-image">
+                            <img src="manasa.jpg" alt="Manasa Hostel Image">
+                        </div>
+                        <div class="hostel-image">
+                            <img src="dhruv.jpg" alt="Dhruv Hostel Image">
+                        </div>
+                    </div>
+                    <div class="hostel-info">
+                        <div class="hostel-name">Manasa Hostel</div>
+                        <div>Owner: Rambabu</div>
+                        <div class="hostel-rating">Rating: 4 out of 5</div>
+                        <div>Monthly Fee: 7000</div>
+                        <div class="view-details"><button class="view-button">View Details</button></div>
+                    </div>
+                </div>
+            </a>
+            <!-- Dhruv Hostel -->
+            <a href="viewdetails.html" style="text-decoration: none;">
+                <div class="hostel-details" id="dhruv" data-price="7500" data-rating="5" data-reviews="70" data-distance="30" onmouseenter="startSlide('dhruv')" onmouseleave="stopSlide('dhruv')">
+                    <div class="hostel-image-slider">
+                        <div class="hostel-image">
+                            <img src="dhruv1.jpg" alt="Dhruv Hostel Image">
+                        </div>
+                        <div class="hostel-image">
+                            <img src="dhruv2.jpg" alt="Dhruv Hostel Image">
+                        </div>
+                    </div>
+                    <div class="hostel-info">
+                        <div class="hostel-name">Dhruv Hostel</div>
+                        <div>Owner: Somesh</div>
+                        <div class="hostel-rating">Rating: 5 out of 5</div>
+                        <div>Monthly Fee: 7500</div>
+                        <div class="view-details"><button class="view-button">View Details</button></div>
+                    </div>
+                </div>
+            </a>
+            <!-- Random1 Hostel -->
+            <a href="viewdetails.html" style="text-decoration: none;">
+                <div class="hostel-details" id="random1" data-price="7000" data-rating="4" data-reviews="40" data-distance="25" onmouseenter="startSlide('random1')" onmouseleave="stopSlide('random1')">
+                    <div class="hostel-image-slider">
+                        <div class="hostel-image">
+                            <img src="random1_1.jpg" alt="Random1 Hostel Image">
+                        </div>
+                        <div class="hostel-image">
+                            <img src="random1_2.jpg" alt="Random1 Hostel Image">
+                        </div>
+                    </div>
+                    <div class="hostel-info">
+                        <div class="hostel-name">Random1 Hostel</div>
+                        <div>Owner: Ravi</div>
+                        <div class="hostel-rating">Rating: 4 out of 5</div>
+                        <div>Monthly Fee: 7000</div>
+                        <div class="view-details"><button class="view-button">View Details</button></div>
+                    </div>
+                </div>
+            </a>
+            <!-- Random2 Hostel -->
+            <a href="viewdetails.html" style="text-decoration: none;">
+                <div class="hostel-details" id="random2" data-price="6800" data-rating="3" data-reviews="30" data-distance="40" onmouseenter="startSlide('random2')" onmouseleave="stopSlide('random2')">
+                    <div class="hostel-image-slider">
+                        <div class="hostel-image">
+                            <img src="random2_1.jpg" alt="Random2 Hostel Image">
+                        </div>
+                        <div class="hostel-image">
+                            <img src="random2_2.jpg" alt="Random2 Hostel Image">
+                        </div>
+                    </div>
+                    <div class="hostel-info">
+                        <div class="hostel-name">Random2 Hostel</div>
+                        <div>Owner: Mohan</div>
+                        <div class="hostel-rating">Rating: 3 out of 5</div>
+                        <div>Monthly Fee: $6800</div>
+                        <div class="view-details"><button class="view-button">View Details</button></div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <script>
+        function startSlide(hostelId) {
+            const slider = document.querySelector(`#${hostelId} .hostel-image-slider`);
+            slider.style.animation = 'slide 3s infinite';
+        }
+
+        function stopSlide(hostelId) {
+            const slider = document.querySelector(`#${hostelId} .hostel-image-slider`);
+            slider.style.animation = 'none';
+        }
+
+        function filterHostels() {
+            const input = document.querySelector('.search-input').value.toLowerCase();
+            const distanceRange = document.getElementById('distanceRange').value;
+            const checkboxes = document.querySelectorAll('.filters input[type="checkbox"]');
+            const hostels = document.querySelectorAll('.hostel-details');
+            const filters = {
+                price: null,
+                rating: null,
+                reviews: null
+            };
+
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    filters[checkbox.name] = checkbox.value;
+                }
+            });
+
+            hostels.forEach((hostel) => {
+                const name = hostel.querySelector('.hostel-name').textContent.toLowerCase();
+                const price = parseInt(hostel.getAttribute('data-price'));
+                const rating = parseInt(hostel.getAttribute('data-rating'));
+                const reviews = parseInt(hostel.getAttribute('data-reviews'));
+                const distance = parseInt(hostel.getAttribute('data-distance'));
+                let isVisible = true;
+
+                if (name.includes(input) && distance <= distanceRange) {
+                    if (filters.price) {
+                        if (filters.price === 'low' && price > 7000) isVisible = false;
+                        if (filters.price === 'high' && price < 7000) isVisible = false;
+                    }
+                    if (filters.rating) {
+                        if (filters.rating === 'low' && rating > 4) isVisible = false;
+                        if (filters.rating === 'high' && rating < 4) isVisible = false;
+                    }
+                    if (filters.reviews) {
+                        if (filters.reviews === 'low' && reviews > 50) isVisible = false;
+                        if (filters.reviews === 'high' && reviews < 50) isVisible = false;
+                    }
+                } else {
+                    isVisible = false;
+                }
+
+                hostel.style.display = isVisible ? '' : 'none';
+            });
+        }
+
+        document.querySelectorAll('.filters input[type="checkbox"]').forEach((checkbox) => {
+            checkbox.addEventListener('change', filterHostels);
+        });
+
+        document.getElementById('distanceRange').addEventListener('input', filterHostels);
+    </script>
+</body>
+</html>
